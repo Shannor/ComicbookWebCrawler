@@ -61,7 +61,15 @@ app.get('/scrape-pages', function(req, res){
                 //Only get manga entries 
                 if( $(this).attr('data-toggle') == 'mangapop'){
                   //This page has more fields to pick from. 
-                  var json = { title: "", link: "", img: "", genre: [] , totalViews: 0, lastIssueLink: "", lastIssueNum:0 };
+                  var json = { 
+                      title: "", 
+                      link: "",
+                      img: "", 
+                      genre: [] , 
+                      totalViews: 0, 
+                      lastIssueLink: "", 
+                      lastIssueNum:0 
+                    };
 
                   json.title = $(this).attr('data-original-title').toString();
                   json.link = $(this).children('.media').children().attr('href').toString();
@@ -101,7 +109,12 @@ app.get('/listIssues/:comicUrl', function(req, res){
             var $ = cheerio.load(html);
 
             $('tr').each(function(){
-                var json = {chapterName: "", link: ""};
+
+                var json = {
+                    chapterName: "", 
+                    link: ""
+                };
+
                 var link = $(this).find('a').attr('href');
                 //Null check and make sure its a link to reading 
                 if( link != null && link.indexOf("read") >= 0){
@@ -116,7 +129,7 @@ app.get('/listIssues/:comicUrl', function(req, res){
     });
 });
 
-
+//GET request to get the images for a provided Comic Issue 
 app.get('/readComic/:comicUrl', function(req, res){
     //Get length of select object to count the number of pages
     var wholeReadUrl = req.params.comicUrl;
@@ -124,31 +137,41 @@ app.get('/readComic/:comicUrl', function(req, res){
     var baseReadUrl = wholeReadUrl.split('.');
     var url = baseURL + wholeReadUrl;
     var pageURLs = [];
-    var pageImageURLs = []; 
     var numOfPages = -1; 
 
     //Gets the number of pages and the first page information
     request(url, function(error, response, html){
         if(!error){
-            var json = {pageNumber: 0, pageURL: ""};
             var $ = cheerio.load(html);
             //Get the number of pages
             numOfPages = $('.chapter-content').find('select').first().children().length - 1;
-            //Automatically get first page
-            json.pageNumber = 1;
-            json.pageURL =  $('.chapter-img').attr('src');
-
-            pageImageURLs.push(json);
-
-            for(i=2; i <= numOfPages; i++ ){
-                pageURLs.push(baseReadUrl[0] + "-page-" + i + ".html");
+            //Create the links for each page
+            for(i=1; i <= numOfPages; i++ ){
+                pageURLs.push(baseURL + baseReadUrl[0] + "-page-" + i + ".html");
             }
+
+            async.map(pageURLs, getComicImage, function (err, res){
+                if (err) return console.log(err);
+                console.log(res);
+            });
+
             res.setHeader('Content-Type', 'application/json');
             res.send(JSON.stringify(pageURLs,null, 3));
         }
     });
 
 });
+
+//Iterator function for the async map method
+function getComicImage(url, callback) {
+    request(url, function(err, res, html) {
+        if(!err){
+            var $ = cheerio.load(html);
+            var imageUrl = $('.chapter-img').attr('src');
+            callback(err, imageUrl);
+        }
+    });
+}
 
 app.listen('8081');
 
