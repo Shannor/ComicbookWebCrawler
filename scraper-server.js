@@ -6,6 +6,7 @@ var app     = express();
 
 baseURL = "http://comicastle.org/";
 
+//Get request to get all comics on the website in Alpha/ Numberic order
 app.get('/scrape-all', function(req, res){
   //URL to hit for all the comics 
   var url = "http://comicastle.org/manga-list.html?listType=allABC";
@@ -43,6 +44,7 @@ app.get('/scrape-all', function(req, res){
     });
 });
 
+//GET method to receive comics by popluarity or other features
 app.get('/scrape-pages', function(req, res){
     //Url to hit
     var url = "http://comicastle.org/manga-list.html?listType=pagination&page=1&artist=&author=&name=&genre=&sort=views&sort_type=DESC";
@@ -85,8 +87,8 @@ app.get('/scrape-pages', function(req, res){
 
 });
 
-
-app.get('/specific-comic/:comicUrl', function(req, res){
+//GET method to return the list of all Issue of a Comic 
+app.get('/listIssues/:comicUrl', function(req, res){
 
     var url = baseURL + req.params.comicUrl;
 
@@ -111,6 +113,29 @@ app.get('/specific-comic/:comicUrl', function(req, res){
         res.setHeader('Content-Type', 'application/json');
         res.send(JSON.stringify(listOfComics,null, 3));
     });
+});
+
+
+app.get('/readComic/:comicUrl', function(req, res){
+    //Get length of select object to count the number of pages
+    var wholeReadUrl = req.params.comicUrl;
+    //Removes the .html off it 
+    var baseReadUrl = wholeReadUrl.split('.');
+    var url = baseURL + wholeReadUrl;
+    var pageURLs = [];
+    var pageImageURLs = []; 
+
+    request(url, function(error, response, html){
+        if(!error){
+            var $ = cheerio.load(html);
+            var numOfPages = $('.chapter-content').find('select').first().children().length;
+            console.log($('.chapter-content').find('select').first())
+            // imgUrl = $('.chapter-img').attr('src');
+            res.setHeader('Content-Type', 'text/plain');
+            res.send("NumOfPages: " + numOfPages);
+        }
+    });
+
 });
 
 app.listen('8081');
