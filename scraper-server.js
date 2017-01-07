@@ -1,10 +1,11 @@
-var express = require('express');
-var fs      = require('fs');
-var request = require('request');
-var cheerio = require('cheerio');
-var app     = express();
+const express = require('express');
+const fs      = require('fs');
+const request = require('request');
+const cheerio = require('cheerio');
+const app     = express();
+const async   = require('async');
 
-baseURL = "http://comicastle.org/";
+const baseURL = "http://comicastle.org/";
 
 //Get request to get all comics on the website in Alpha/ Numberic order
 app.get('/scrape-all', function(req, res){
@@ -124,15 +125,26 @@ app.get('/readComic/:comicUrl', function(req, res){
     var url = baseURL + wholeReadUrl;
     var pageURLs = [];
     var pageImageURLs = []; 
+    var numOfPages = -1; 
 
+    //Gets the number of pages and the first page information
     request(url, function(error, response, html){
         if(!error){
+            var json = {pageNumber: 0, pageURL: ""};
             var $ = cheerio.load(html);
-            var numOfPages = $('.chapter-content').find('select').first().children().length;
-            console.log($('.chapter-content').find('select').first())
-            // imgUrl = $('.chapter-img').attr('src');
-            res.setHeader('Content-Type', 'text/plain');
-            res.send("NumOfPages: " + numOfPages);
+            //Get the number of pages
+            numOfPages = $('.chapter-content').find('select').first().children().length - 1;
+            //Automatically get first page
+            json.pageNumber = 1;
+            json.pageURL =  $('.chapter-img').attr('src');
+
+            pageImageURLs.push(json);
+
+            for(i=2; i <= numOfPages; i++ ){
+                pageURLs.push(baseReadUrl[0] + "-page-" + i + ".html");
+            }
+            res.setHeader('Content-Type', 'application/json');
+            res.send(JSON.stringify(pageURLs,null, 3));
         }
     });
 
