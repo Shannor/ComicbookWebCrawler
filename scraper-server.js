@@ -5,7 +5,7 @@ const cheerio = require('cheerio');
 const app     = express();
 const async   = require('async');
 
-const baseURL = "http://comicastle.org/";
+const baseURL = "http://www.readcomics.tv/";
 
 //Get request to get all comics on the website in Alpha/ Numberic order
 app.get('/scrape-all', function(req, res){
@@ -134,8 +134,8 @@ app.get('/readComic/:comicUrl', function(req, res){
     //Get length of select object to count the number of pages
     var wholeReadUrl = req.params.comicUrl;
     //Removes the .html off it 
-    var baseReadUrl = wholeReadUrl.split('.');
-    var url = baseURL + wholeReadUrl;
+    var baseReadUrl = "http://www.readcomics.tv/the-walking-dead/chapter-2";
+    var url = "http://www.readcomics.tv/the-walking-dead/chapter-2";
     var pageURLs = [];
     var numOfPages = -1; 
 
@@ -144,19 +144,19 @@ app.get('/readComic/:comicUrl', function(req, res){
         if(!error){
             var $ = cheerio.load(html);
             //Get the number of pages
-            numOfPages = $('.chapter-content').find('select').first().children().length - 1;
+            numOfPages = $('.full-select').last().children().length;
             //Create the links for each page
             for(i=1; i <= numOfPages; i++ ){
-                pageURLs.push(baseURL + baseReadUrl[0] + "-page-" + i + ".html");
+                pageURLs.push(baseReadUrl + "/"+ i);
             }
 
-            async.map(pageURLs, getComicImage, function (err, res){
+            async.map(pageURLs, getComicImage, function (err, data){
                 if (err) return console.log(err);
-                console.log(res);
+                res.setHeader('Content-Type', 'application/json');
+                res.send(JSON.stringify(data,null, 3));
             });
 
-            res.setHeader('Content-Type', 'application/json');
-            res.send(JSON.stringify(pageURLs,null, 3));
+ 
         }
     });
 
@@ -167,7 +167,7 @@ function getComicImage(url, callback) {
     request(url, function(err, res, html) {
         if(!err){
             var $ = cheerio.load(html);
-            var imageUrl = $('.chapter-img').attr('src');
+            var imageUrl = $('#main_img').attr('src');
             callback(err, imageUrl);
         }
     });
