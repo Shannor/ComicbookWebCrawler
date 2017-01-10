@@ -94,7 +94,7 @@ app.get('/popular-comics/:pageNumber', function(req, res){
 });
 
 //GET method to return the list of all Issue of a Comic 
-app.get('/listIssues/:comicName', function(req, res){
+app.get('/list-issues/:comicName', function(req, res){
 
     var url = baseURL +'comic/' + req.params.comicName;
 
@@ -126,12 +126,9 @@ app.get('/listIssues/:comicName', function(req, res){
 });
 
 //GET request to get the images for a provided Comic Issue 
-app.get('/readComic/:comicUrl', function(req, res){
-    //Get length of select object to count the number of pages
-    var wholeReadUrl = req.params.comicUrl;
+app.get('/read-comic/:comicName/:chapterNumber', function(req, res){
     //Removes the .html off it 
-    var baseReadUrl = "http://www.readcomics.tv/the-walking-dead/chapter-2";
-    var url = "http://www.readcomics.tv/the-walking-dead/chapter-2";
+    var url = baseURL + req.params.comicName + '/chapter-' + req.params.chapterNumber;
     var pageURLs = [];
     var numOfPages = -1; 
 
@@ -141,24 +138,24 @@ app.get('/readComic/:comicUrl', function(req, res){
             var $ = cheerio.load(html);
             //Get the number of pages
             numOfPages = $('.full-select').last().children().length;
+            
             //Create the links for each page
             for(i=1; i <= numOfPages; i++ ){
-                pageURLs.push(baseReadUrl + "/"+ i);
+                pageURLs.push(url + "/"+ i);
             }
 
+            //Asycn function to get all off the pictures and return them
             async.map(pageURLs, getComicImage, function (err, data){
                 if (err) return console.log(err);
                 res.setHeader('Content-Type', 'application/json');
                 res.send(JSON.stringify(data,null, 3));
             });
-
- 
         }
     });
 
 });
 
-//Iterator function for the async map method
+//Iteratior method to get the Image from a given url 
 function getComicImage(url, callback) {
     request(url, function(err, res, html) {
         if(!err){
