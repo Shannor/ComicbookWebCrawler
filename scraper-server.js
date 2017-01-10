@@ -191,8 +191,8 @@ app.get('/search-categories', function(req, res){
 // wg == category user wants to be found
 // wog == category user doesn't wants
 // status == Ongoing, Complete or doesn't matter 
-app.get('/advanced-search/:term/:wg?/:wog?/:status?',function(req, res){
-    var url = baseURL + 'advanced-search?key=' +req.params.term;
+app.get('/advanced-search/:key/:wg?/:wog?/:status?',function(req, res){
+    var url = baseURL + 'advanced-search?key=' +req.params.key;
 
     //Checks if wg, wog, status were provided or not
     if(req.params.wg !== undefined && req.params.wg != 'null'){
