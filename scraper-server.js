@@ -138,7 +138,7 @@ app.get('/read-comic/:comicName/:chapterNumber', function(req, res){
             var $ = cheerio.load(html);
             //Get the number of pages
             numOfPages = $('.full-select').last().children().length;
-            
+
             //Create the links for each page
             for(i=1; i <= numOfPages; i++ ){
                 pageURLs.push(url + "/"+ i);
@@ -165,6 +165,81 @@ function getComicImage(url, callback) {
         }
     });
 }
+
+
+// Search functionality for the website. Methods that help with it and perform it
+app.get('/search-categories', function(req, res){
+    var url = baseURL + 'advanced-search';
+
+    var categories = [];
+    request(url, function(error, response, html){
+        if(!error){
+            var $ = cheerio.load(html);
+
+            $('.search-checks').children('li').each(function(){
+                categories.push($(this).text());
+            });
+
+            res.setHeader('Content-Type', 'application/json');
+            res.send(JSON.stringify(categories,null, 3));
+        }
+    });
+});
+
+//Four main things to search on, place null in request url when not using it
+// Key == User typed in
+// wg == category user wants to be found
+// wog == category user doesn't wants
+// status == Ongoing, Complete or doesn't matter 
+app.get('/advanced-search/:term/:wg?/:wog?/:status?',function(req, res){
+    var url = baseURL + 'advanced-search?key=' +req.params.term;
+
+    //Checks if wg, wog, status were provided or not
+    if(req.params.wg !== undefined && req.params.wg != 'null'){
+        url += '&wg=' + req.params.wg;
+    }else{
+        url += '&wg=';
+    }
+    if(req.params.wog !== undefined && req.params.wog != 'null'){
+        url += '&wog=' + req.params.wog
+    }else{
+        url += '&wog=';
+
+    }
+    if(req.params.status !== undefined && req.params.status != 'null' ){
+        url += '&status=' + req.params.status;
+    }else{
+        url += '&status='; 
+    }
+    console.log(url)
+    var comics = [];
+    request(url, function(error, response, html){
+        if(!error){
+            var $ = cheerio.load(html);
+
+            $('.manga-box').each(function(){
+            //This page has more fields to pick from. 
+                var json = { 
+                    title: "", 
+                    link: "",
+                    img: "", 
+                    genre: ""
+                };
+                json.title = $(this).find('h3').children().text();
+                json.link = $(this).find('h3').children().attr('href');
+                json.img = $(this).find('img').attr('src').toString();
+                //Loop through all possible genres
+                json.genre = $(this).find('.genre').text().replace(/\s/g,'');
+
+                //Add to comics array
+                comics.push(json);
+            });
+
+            res.setHeader('Content-Type', 'application/json');
+            res.send(JSON.stringify(comics,null, 3));
+        }
+    });
+});
 
 app.listen('8081');
 
