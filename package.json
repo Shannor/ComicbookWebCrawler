@@ -4,7 +4,8 @@
   "description": "A webcrawler designed to get information from the website www.readcomics.tv.",
   "main": "scraper-server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start":"nodemon scraper-server.js"
   },
   "keywords": [],
   "author": "Shannor Trotty",
