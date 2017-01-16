@@ -9,6 +9,9 @@
   },
   "keywords": [],
   "author": "Shannor Trotty",
+  "engines":{
+    "node": ">=6.9.4"
+  },
   "license": "ISC",
   "dependencies": {
     "async": "^2.1.4",
