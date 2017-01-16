@@ -1,2 +1,3 @@
+runtme: nodejs
 env: flex
-runtime: nodejs
+service: webscraper-service
