@@ -1,13 +1,13 @@
 {
   "name": "Comic-Scraper",
   "version": "1.0.0",
-  "description": "",
+  "description": "A webcrawler designed to get information from the website www.readcomics.tv.",
   "main": "scraper-server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Shannor Trotty",
   "license": "ISC",
   "dependencies": {
     "async": "^2.1.4",
