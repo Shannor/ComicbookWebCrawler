@@ -1,0 +1,3 @@
+runtme: nodejs
+env: flex
+service: webscraper-service
