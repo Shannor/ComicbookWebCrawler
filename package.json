@@ -5,7 +5,7 @@
   "main": "scraper-server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start":"nodemon scraper-server.js"
+    "start":"node scraper-server.js"
   },
   "keywords": [],
   "author": "Shannor Trotty",
