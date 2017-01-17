@@ -244,8 +244,8 @@ app.get('/advanced-search/:key/:wg?/:wog?/:status?',function(req, res){
     });
 });
 
-app.listen('8081');
+app.listen('8080');
 
-console.log('Magic happens on port 8081');
+console.log('Magic happens on port 8080');
 
 exports = module.exports = app;
