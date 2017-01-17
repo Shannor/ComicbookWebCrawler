@@ -6,7 +6,11 @@ const async   = require('async');
 
 const baseURL = "http://www.readcomics.tv/";
 
-
+app.get('/', function(req,res){
+    res.type('text/plain');
+    res.send("Hello Comic Fan");   
+});
+    
 //TODO: Need an newly updated get request for homepage
 //Get request to get all comics on the website in Alpha/ Numberic order
 app.get('/comic-list-AZ', function(req, res){
