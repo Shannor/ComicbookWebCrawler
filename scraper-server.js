@@ -179,12 +179,14 @@ app.get("/:comicName/description",function(req, res){
         if(!error){
             var $ = cheerio.load(html);
             $('.manga-details').find('tr').each(function(){
-                var input = $(this).last().children().text().replace(/\s/g,'').split(":");
+                var input = $(this).last().children().text().replace(/(\r\n|\n|\r|\t)/gm,"").split(":");
+                var value = input[1].trim();
                 var key = input[0].charAt(0).toLowerCase(0) + input[0].slice(1);
-                jsonDesc[key] = input[1];
+                jsonDesc[key] = value;
             });
             jsonDesc.largeImg = $('.manga-image').children('img').attr('src');
-            jsonDesc.description = $('.pdesc').text();
+            var descript = $('.pdesc').text().replace(/(\r\n|\n|\r|\t)/gm,"");
+            jsonDesc.description = descript.trim();
             res.setHeader('Content-Type',"application/json");
             res.send(JSON.stringify(jsonDesc, null, 3));
         }
