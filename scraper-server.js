@@ -169,6 +169,26 @@ function getComicImage(url, callback) {
     });
 }
 
+app.get("/:comicName/description",function(req, res){
+    var url = baseURL + "comic/" + req.params.comicName;
+    var jsonDesc = {
+        description:""
+    };
+    request(url,function(error, response, html){
+        if(!error){
+            var $ = cheerio.load(html);
+            $('.manga-details').find('tr').each(function(){
+                var input = $(this).last().children().text().replace(/\s/g,'').split(":");
+                var key = input[0].charAt(0).toLowerCase(0) + input[0].slice(1);
+                jsonDesc[key] = input[1];
+            });
+            jsonDesc.description = $('.pdesc').text();
+            res.setHeader('Content-Type',"application/json");
+            res.send(JSON.stringify(jsonDesc, null, 3));
+        }
+    });
+});
+
 
 // Search functionality for the website. Methods that help with it and perform it
 app.get('/search-categories', function(req, res){
