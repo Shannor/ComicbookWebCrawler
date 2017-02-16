@@ -172,7 +172,8 @@ function getComicImage(url, callback) {
 app.get("/:comicName/description",function(req, res){
     var url = baseURL + "comic/" + req.params.comicName;
     var jsonDesc = {
-        description:""
+        description:"",
+        largeImg:"",
     };
     request(url,function(error, response, html){
         if(!error){
@@ -182,6 +183,7 @@ app.get("/:comicName/description",function(req, res){
                 var key = input[0].charAt(0).toLowerCase(0) + input[0].slice(1);
                 jsonDesc[key] = input[1];
             });
+            jsonDesc.largeImg = $('.manga-image').children('img').attr('src');
             jsonDesc.description = $('.pdesc').text();
             res.setHeader('Content-Type',"application/json");
             res.send(JSON.stringify(jsonDesc, null, 3));
