@@ -181,6 +181,9 @@ app.get("/:comicName/description",function(req, res){
             $('.manga-details').find('tr').each(function(){
                 var input = $(this).last().children().text().replace(/(\r\n|\n|\r|\t)/gm,"").split(":");
                 var value = input[1].trim();
+                if(input.length == 3){
+                    value += ": " + input[2].trim();
+                }
                 var key = input[0].charAt(0).toLowerCase(0) + input[0].slice(1);
                 jsonDesc[key] = value;
             });
