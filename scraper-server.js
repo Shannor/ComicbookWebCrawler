@@ -21,23 +21,29 @@ app.get('/comic-list-AZ', function(req, res){
         // First we'll check to make sure no errors occurred when making the request
         if(!error){
             // Var to hold all the comic information 
-            var comics = { Number:[] , A: [], B:[] , C:[], D:[], E:[], F:[], G:[], H:[], I:[], J:[], K:[], L:[],
-            M:[], N:[], O:[], P:[], Q:[], R:[], S:[], T:[], U:[], V:[], W:[], X:[], Y:[], Z:[] };
+            var comics = []
             // Next, we'll utilize the cheerio library on the returned html which will essentially give us jQuery functionality
             var $ = cheerio.load(html);
 
             $('.container').find('li').each(function(){
                   //Only has the title and link present here 
-                  var json = { title: "", link: ""};
+                  var json = { 
+                      title: "", 
+                      link: "",
+                      category:""
+                     };
+
                   json.title = $(this).children().text();
                   json.link = $(this).children().attr('href').toString();
                   var category = $(this).parent().siblings('div').text();
                   //Add comic to correct category
                   if(category == "#" || !isNaN(category)){
-                      comics.Number.push(json);
+                      json.category = "#";
                   }else{
-                      comics[category].push(json);
+                      json.category = category;
                   }
+
+                comics.push(json);
             });
         }
         //Return the Array of all the JSON comic objects
