@@ -21,7 +21,7 @@ app.get('/comic-list-AZ', function(req, res){
         // First we'll check to make sure no errors occurred when making the request
         if(!error){
             // Var to hold all the comic information 
-            var comics = []
+            var comics = [];
             // Next, we'll utilize the cheerio library on the returned html which will essentially give us jQuery functionality
             var $ = cheerio.load(html);
 
@@ -30,7 +30,6 @@ app.get('/comic-list-AZ', function(req, res){
                   var json = { 
                       title: "", 
                       link: "",
-                      category:""
                      };
 
                   json.title = $(this).children().text();
@@ -38,12 +37,21 @@ app.get('/comic-list-AZ', function(req, res){
                   var category = $(this).parent().siblings('div').text();
                   //Add comic to correct category
                   if(category == "#" || !isNaN(category)){
-                      json.category = "#";
+                      category = "#";
+                    }
+                  var index = comics.length - 1
+                  if(comics.length > 0 && comics[index].category == category){
+                      comics[index].comic_list.push(json);
+                      //Add to running array 
                   }else{
-                      json.category = category;
+                      //make new spot
+                      var obj = {
+                          category: category,
+                          comic_list: []
+                      };
+                      obj.comic_list.push(json);
+                      comics.push(obj);
                   }
-
-                comics.push(json);
             });
         }
         //Return the Array of all the JSON comic objects
