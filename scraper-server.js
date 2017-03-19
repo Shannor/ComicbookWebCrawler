@@ -235,27 +235,26 @@ app.get('/search-categories', function(req, res){
 // wg == category user wants to be found
 // wog == category user doesn't wants
 // status == Ongoing, Complete or doesn't matter 
-app.get('/advanced-search/:key/:wg?/:wog?/:status?',function(req, res){
-    var url = baseURL + 'advanced-search?key=' +req.params.key;
+app.get('/advanced-search',function(req, res){
+    var url = baseURL + 'advanced-search?';
+    var key, include, exclude, status;
+    if(req.query.key != undefined){
+        url += "key=" + req.query.key;
+    }
 
-    //Checks if wg, wog, status were provided or not
-    if(req.params.wg !== undefined && req.params.wg != 'null'){
-        url += '&wg=' + req.params.wg;
-    }else{
-        url += '&wg=';
+    if(req.query.include != undefined){
+        url += "\&wg=" + req.query.include;
     }
-    if(req.params.wog !== undefined && req.params.wog != 'null'){
-        url += '&wog=' + req.params.wog
-    }else{
-        url += '&wog=';
 
+    if(req.query.exclude != undefined){
+        url += "\&wog=" + req.query.exclude;
     }
-    if(req.params.status !== undefined && req.params.status != 'null' ){
-        url += '&status=' + req.params.status;
-    }else{
-        url += '&status='; 
+
+    if(req.query.status != undefined){
+        url += "\&status=" + req.query.status;
     }
-    console.log(url)
+
+
     var comics = [];
     request(url, function(error, response, html){
         if(!error){
