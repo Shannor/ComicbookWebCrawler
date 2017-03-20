@@ -237,7 +237,7 @@ app.get('/search-categories', function(req, res){
 // status == Ongoing, Complete or doesn't matter 
 app.get('/advanced-search',function(req, res){
     var url = baseURL + 'advanced-search?';
-    var key, include, exclude, status;
+    var key, include, exclude, status, page;
     if(req.query.key != undefined){
         url += "key=" + req.query.key;
     }
@@ -254,8 +254,12 @@ app.get('/advanced-search',function(req, res){
         url += "\&status=" + req.query.status;
     }
 
+    if(req.query.page != undefined){
+        url += "\&page=" + req.query.page;
+    }
 
     var comics = [];
+    //When no more pages reutrns an empty list.
     request(url, function(error, response, html){
         if(!error){
             var $ = cheerio.load(html);
