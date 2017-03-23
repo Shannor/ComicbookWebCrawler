@@ -60,7 +60,6 @@ app.get('/comic-list-AZ', function(req, res){
     });
 });
 
-//TODO: Could ask for page number?
 //GET method to receive list of popular comics
 app.get('/popular-comics/:pageNumber', function(req, res){
     //Url to hit
@@ -111,20 +110,33 @@ app.get('/popular-comics/:pageNumber', function(req, res){
 });
 
 //GET method to return the list of all Issue of a Comic 
-app.get('/list-issues/:comicName', function(req, res){
-
+//TODO: Rename to chapters
+var chapterList = []
+app.get('/list-chapters/:comicName', function(req, res){
     var url = baseURL +'comic/' + req.params.comicName;
+    q.push({url: url, page: 1, res: res}, chapterCallback);
 
-    request(url, function(error, response, html){
+});
+
+var q = async.queue(function (task, callback){
+
+        request(task.url + "/" +  task.page, function(error, response, html){
         // First we'll check to make sure no errors occurred when making the request
+        let listOfIssues = [];
+        if(error) {
+            console.error(error.stack);
+            task.res.status(500);
+            task.res.render("error", {error: error});
+        }
+        if(response.statusCode != 200) return task.res.status(response.statusCode).send("Something Broke!");
+
         if(!error){
-            var listOfIssues = [];
 
             var $ = cheerio.load(html);
 
             $('.basic-list').children().each(function(){
 
-                var json = {
+                let json = {
                     chapterName: "", 
                     link: "",
                     releaseDate: ""
@@ -136,12 +148,41 @@ app.get('/list-issues/:comicName', function(req, res){
                 json.releaseDate = $(this).children('span').text();
                 listOfIssues.push(json);
             });
-        }
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(listOfIssues,null, 3));
-    });
-});
 
+            // Check if already have this item, Website will loop back to the beginning 
+            if(containsObject(listOfIssues[0], chapterList)){
+                //Stop, return chapter list
+                task.res.setHeader('Content-Type', 'application/json');
+                task.res.send(JSON.stringify(chapterList,null, 3));
+
+            }else{
+                //Get the next page and save this list
+                q.push({url: task.url, page: ++task.page, res: task.res}, chapterCallback);
+                callback(error,listOfIssues);
+            }
+        }
+    });
+}, 1);
+
+
+function chapterCallback(error ,data = null){
+    if(error) return error;
+
+    if(data){
+        chapterList = chapterList.concat(data);
+    }
+
+}
+
+function containsObject(obj, list) {
+    var i;
+    for (i = 0; i < list.length; i++) {
+        if (list[i].chapterName == obj.chapterName) {
+            return true;
+        }
+    }
+    return false;
+}
 //GET request to get the images for a provided Comic Issue 
 app.get('/read-comic/:comicName/:chapterNumber', function(req, res){
     //Removes the .html off it 
