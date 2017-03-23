@@ -114,6 +114,7 @@ app.get('/popular-comics/:pageNumber', function(req, res){
 var chapterList = []
 app.get('/list-chapters/:comicName', function(req, res){
     var url = baseURL +'comic/' + req.params.comicName;
+    chapterList = [];
     q.push({url: url, page: 1, res: res}, chapterCallback);
 
 });
@@ -125,10 +126,7 @@ var q = async.queue(function (task, callback){
         let listOfIssues = [];
         if(error) {
             console.error(error.stack);
-            task.res.status(500);
-            task.res.render("error", {error: error});
         }
-        if(response.statusCode != 200) return task.res.status(response.statusCode).send("Something Broke!");
 
         if(!error){
 
@@ -150,30 +148,35 @@ var q = async.queue(function (task, callback){
             });
 
             // Check if already have this item, Website will loop back to the beginning 
-            if(containsObject(listOfIssues[0], chapterList)){
+            //Or if we have reached the end. 
+            if(listOfIssues.length == 0 ||containsObject(listOfIssues[0], chapterList)){
                 //Stop, return chapter list
                 task.res.setHeader('Content-Type', 'application/json');
                 task.res.send(JSON.stringify(chapterList,null, 3));
-
+                return callback(error)
             }else{
                 //Get the next page and save this list
                 q.push({url: task.url, page: ++task.page, res: task.res}, chapterCallback);
-                callback(error,listOfIssues);
+                return callback(error,listOfIssues);
             }
         }
     });
 }, 1);
 
-
+//Need to say the queue is finished or wont work. 
+q.drain = function(){
+    console.log("The queue has finsihed processing!");
+}
+//Callback to add info to the list
 function chapterCallback(error ,data = null){
     if(error) return error;
 
     if(data){
         chapterList = chapterList.concat(data);
     }
-
 }
 
+//Test to see if we are readding items. 
 function containsObject(obj, list) {
     var i;
     for (i = 0; i < list.length; i++) {
