@@ -232,6 +232,7 @@ app.get("/:comicName/description",function(req, res){
     var jsonDesc = {
         description:"",
         largeImg:"",
+        link: req.params.comicName
     };
     request(url,function(error, response, html){
         if(!error){
