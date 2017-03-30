@@ -189,9 +189,13 @@ function containsObject(obj, list) {
 //GET request to get the images for a provided Comic Issue 
 app.get('/read-comic/:comicName/:chapterNumber', function(req, res){
     //Removes the .html off it 
-    var url = baseURL + req.params.comicName + '/chapter-' + req.params.chapterNumber;
-    var pageURLs = [];
-    var numOfPages = -1; 
+    let url = baseURL + req.params.comicName + '/chapter-' + req.params.chapterNumber;
+    let response_object = {
+        numOfPages: 0,
+        pageUrls:[]
+    }
+    let pageURLs = [];
+    let numOfPages = -1; 
 
     //Gets the number of pages and the first page information
     request(url, function(error, response, html){
@@ -199,7 +203,7 @@ app.get('/read-comic/:comicName/:chapterNumber', function(req, res){
             var $ = cheerio.load(html);
             //Get the number of pages
             numOfPages = $('.full-select').last().children().length;
-
+            response_object.numOfPages = numOfPages;
             //Create the links for each page
             for(i=1; i <= numOfPages; i++ ){
                 pageURLs.push(url + "/"+ i);
@@ -208,8 +212,9 @@ app.get('/read-comic/:comicName/:chapterNumber', function(req, res){
             //Asycn function to get all off the pictures and return them
             async.map(pageURLs, getComicImage, function (err, data){
                 if (err) return console.log(err);
+                response_object.pageUrls = data;
                 res.setHeader('Content-Type', 'application/json');
-                res.send(JSON.stringify(data,null, 3));
+                res.send(JSON.stringify(response_object,null, 3));
             });
         }
     });
